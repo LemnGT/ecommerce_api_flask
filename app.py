@@ -24,8 +24,21 @@ def add_product():
         product = Product(name=data['name'],price=data['price'],description=data.get('description',''))
         db.session.add(product)
         db.session.commit()
-        return jsonify({"message":"Product added succesfully"})
+        return jsonify({"message":"Product added successfully"})
     return jsonify({"message":"Invalid product data"}),400
+
+@app.route('/api/products/delete/<int:product_id>', methods=["DELETE"])
+def delete_product(product_id):
+    #get product from db
+    product=Product.query.get(product_id)
+    #if valid
+    if product:
+        db.session.delete(product)
+        db.session.commit()
+        return jsonify({"message":"Product deleted successfully"})
+    #if invalid
+    return jsonify({"message":"Product not found"}),404
+
 
 @app.route('/')
 def hello_world():
