@@ -1,15 +1,25 @@
 #import
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
+from flask_login import UserMixin
+
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI']='sqlite:///ecommerce.db'
 
 db = SQLAlchemy(app)
+CORS(app)
+
 
 #Modeling
+#User(id, username, password)
+class User(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    username=db.Column(db.String(80), nullable=False, unique=True)
+    password=db.Column(db.String(80), nullable=False)
+    
 #Product (id, name, price, description)
-
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
@@ -56,6 +66,7 @@ def get_product_details(product_id):
     #if invalid
     return jsonify({"message":"Product not found"}),404
 
+
 @app.route('/api/products/update/<int:product_id>', methods=["PUT"])
 def update_product(product_id):
 
@@ -77,6 +88,22 @@ def update_product(product_id):
 
     db.session.commit()
     return jsonify({"message":"Product updated successfully"})
+
+
+@app.route('/api/products', methods=["GET"])
+def get_products():
+    products = Product.query.all()
+    products_list=[]
+    for product in products:
+        product_data=({
+        "id":product.id,
+        "name":product.name,
+        "price":product.price,
+        })
+        products_list.append(product_data)
+    return jsonify(products_list)
+
+
 @app.route('/')
 def hello_world():
     return 'Hello World!'
