@@ -2,11 +2,11 @@
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-from flask_login import UserMixin, login_user, LoginManager
+from flask_login import UserMixin, login_user, LoginManager, login_required
 
 
 app = Flask(__name__)
-app.confg['SECRET_KEY'] = "gotta_go_fast"
+app.config['SECRET_KEY'] = "talk_about_low_budget_flights"
 app.config['SQLALCHEMY_DATABASE_URI']='sqlite:///ecommerce.db'
 
 login_manager=LoginManager()
@@ -30,7 +30,7 @@ class Product(db.Model):
     price = db.Column(db.Float, nullable=False)
     description = db.Column(db.Text, nullable=True)
 
-@app.route('/login',method=["POST"])
+@app.route('/login',methods=["POST"])
 def login():
     data=request.json
     
@@ -41,6 +41,7 @@ def login():
     return jsonify({"message":"Unauthorized. Invalid credentials"}),401
 
 @app.route('/api/products/add', methods=["POST"])
+@login_required
 def add_product():
     data = request.json
     if "name" in data and "price" in data:
@@ -52,6 +53,7 @@ def add_product():
 
 
 @app.route('/api/products/delete/<int:product_id>', methods=["DELETE"])
+@login_required
 def delete_product(product_id):
     #get product from db
     product=Product.query.get(product_id)
@@ -81,6 +83,7 @@ def get_product_details(product_id):
 
 
 @app.route('/api/products/update/<int:product_id>', methods=["PUT"])
+@login_required
 def update_product(product_id):
 
     #get product from db
